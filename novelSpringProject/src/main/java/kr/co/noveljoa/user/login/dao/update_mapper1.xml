@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.noveljoa.user.login.updateMapper1">
+
+
+<update id="passwordTemp" parameterType="kr.co.noveljoa.user.login.vo.PasswordTempVO">
+update	member
+set 	pw = #{pw}
+where 	id = #{id}
+</update>
+<update id="infoChange" parameterType="kr.co.noveljoa.user.login.vo.InfoChangeVO">
+update	member
+set 	phone = #{phone}
+where 	id = #{id}
+</update>
+<update id="pwChange" parameterType="kr.co.noveljoa.user.login.vo.PasswordChangeVO">
+update	member
+set 	pw = #{pw}
+where 	id = #{id}
+</update>
+<update id="imgChange" parameterType="kr.co.noveljoa.user.login.vo.ProfileImgVO">
+update	member
+set 	photo = #{photo}
+where 	num_member = #{num_member}
+</update>
+</mapper>

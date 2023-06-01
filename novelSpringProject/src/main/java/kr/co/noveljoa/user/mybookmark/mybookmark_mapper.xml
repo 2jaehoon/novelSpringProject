@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="mybookmarkMapper">	<!-- namespace : 아이디를 구분할때 사용 -->
+
+	<select id="selectMyBookmark" parameterType="kr.co.noveljoa.user.mybookmark.MyBookmarkVO" resultType="kr.co.noveljoa.user.mybookmark.MyBookmarkDomain">
+		SELECT n.title, n.photo, n.age, n.open, n.end, n.genre, e.num_episode, e.num_novel, e.title etitle, e.open eopen, e.make emake
+		FROM bookmark b
+		JOIN episode e ON b.num_episode = e.num_episode
+		JOIN novel n ON e.num_novel = n.num_novel
+		WHERE b.num_member = #{num_member} and n.open = 1 and e.open = 1
+		<if test="search != null and search != ''">
+			AND n.title LIKE '%'||#{search}||'%'
+		</if>
+		order by emake
+		<if test="type==0">
+			DESC
+		</if>
+	</select>
+	
+	<delete id="deleteMyBookmark" parameterType="kr.co.noveljoa.user.mybookmark.DeleteBookmarkVO">
+		delete from bookmark 
+		where num_member=#{num_member} and num_episode=#{num_episode}
+	</delete>
+
+</mapper>

@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="mainMapper">	<!-- namespace : 아이디를 구분할때 사용 -->
+
+	<select id="selectMain" parameterType="kr.co.noveljoa.user.main.MainVO" resultType="kr.co.noveljoa.user.main.MainDomain">
+	SELECT NUM_NOVEL, PHOTO, AGE, END, TITLE, ID, LIKEN_COUNT, VISIT, STORY, EPISODE_COUNT, MAX_MAKE, VIST_RANK, genre
+	FROM (
+	    SELECT n.NUM_NOVEL, n.PHOTO, n.AGE, n.END, n.TITLE, m.ID, COUNT(l.NUM_LIKE) AS LIKEN_COUNT, n.genre,
+	    e.VISIT, n.STORY, COUNT(ep.NUM_EPISODE) AS EPISODE_COUNT, MAX(ep.MAKE) AS MAX_MAKE,
+	    RANK() OVER (ORDER BY e.VISIT DESC) AS VIST_RANK    
+	    FROM NOVEL n    
+	    JOIN MEMBER m ON n.NUM_MEMBER = m.NUM_MEMBER    
+	    LEFT JOIN LIKEN l ON n.NUM_NOVEL = l.NUM_NOVEL    
+	    LEFT JOIN (
+	        SELECT NUM_NOVEL, MAX(VISIT) AS VISIT    
+	        FROM EPISODE    
+	        WHERE MAKE >= SYSDATE - #{type}
+	        GROUP BY NUM_NOVEL
+	    ) e ON n.NUM_NOVEL = e.NUM_NOVEL    
+	    LEFT JOIN EPISODE ep ON n.NUM_NOVEL = ep.NUM_NOVEL AND e.VISIT = ep.VISIT    
+	    WHERE ep.MAKE >= SYSDATE - #{type}
+	    AND e.VISIT IS NOT NULL
+	    AND n.OPEN = 1
+	    <if test="genre!=0">and n.genre like '%'||#{genre}||'%'</if>
+	    GROUP BY n.NUM_NOVEL, n.PHOTO, n.AGE, n.END, n.TITLE, m.ID, e.VISIT, n.STORY, n.END, n.genre
+	    ORDER BY e.VISIT DESC
+	)
+	WHERE VIST_RANK &lt; 11
+	</select>
+
+</mapper>

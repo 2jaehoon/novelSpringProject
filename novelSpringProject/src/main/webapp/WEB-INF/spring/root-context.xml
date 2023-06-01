@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans https://www.springframework.org/schema/beans/spring-beans.xsd">
+	
+	<!-- Root Context: defines shared resources visible to all other web components -->
+	<bean id="mDAO" class="kr.co.noveljoa.user.main.MainDAO"/>
+	<bean id="ms" class="kr.co.noveljoa.user.main.MainService">
+		<constructor-arg ref="mDAO"/>
+	</bean>
+	<bean id="rDAO" class="kr.co.noveljoa.user.ranking.RankingDAO"/>
+	<bean id="rs" class="kr.co.noveljoa.user.ranking.RankingService">
+		<constructor-arg ref="rDAO"/>
+	</bean>
+	<bean id="sDAO" class="kr.co.noveljoa.user.search.SearchDAO"/>
+	<bean id="ss" class="kr.co.noveljoa.user.search.SearchService">
+		<constructor-arg ref="sDAO"/>
+	</bean>
+	<bean id="mnDAO" class="kr.co.noveljoa.user.mynovel.MyNovelDAO"/>
+	<bean id="mns" class="kr.co.noveljoa.user.mynovel.MyNovelService">
+		<constructor-arg ref="mnDAO"/>
+	</bean>
+	<bean id="mlDAO" class="kr.co.noveljoa.user.mylike.MyLikeDAO"/>
+	<bean id="mls" class="kr.co.noveljoa.user.mylike.MyLikeService">
+		<constructor-arg ref="mlDAO"/>
+	</bean>
+	<bean id="mbDAO" class="kr.co.noveljoa.user.mybookmark.MyBookmarkDAO"/>
+	<bean id="mbs" class="kr.co.noveljoa.user.mybookmark.MyBookmarkService">
+		<constructor-arg ref="mbDAO"/>
+	</bean>
+	<bean id="nnDAO" class="kr.co.noveljoa.user.newnovel.NewNovelDAO"/>
+	<bean id="nns" class="kr.co.noveljoa.user.newnovel.NewNovelService">
+		<constructor-arg ref="nnDAO"/>
+	</bean>
+	<bean id="wnDAO" class="kr.co.noveljoa.user.writernovel.WriterNovelDAO"/>
+	<bean id="wns" class="kr.co.noveljoa.user.writernovel.WriterNovelService">
+		<constructor-arg ref="wnDAO"/>
+	</bean>
+	<bean id="enDAO" class="kr.co.noveljoa.user.noveledit.EditNovelDAO"/>
+	<bean id="ens" class="kr.co.noveljoa.user.noveledit.EditNovelService">
+		<constructor-arg ref="enDAO"/>
+	</bean>
+		
+</beans>

@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.noveljoa.user.episode.episodeMapper">
+ 	
+ 	<!-- 읽기 리스트 소설 윗부분 -->
+	<select id="selectNovel" parameterType="Integer" 
+  			resultType="kr.co.noveljoa.user.episode.domain.NovelDomain">
+		select 
+			(SELECT DISTINCT id FROM MEMBER m, NOVEL n WHERE m.NUM_MEMBER=n.NUM_MEMBER AND n.NUM_NOVEL=#{num_novel}) id, 
+			title novelTitle, age, photo, story intro, open, end, genre, 
+			(select count(*) FROM LIKEN WHERE num_novel = #{num_novel}) likeCnt, 
+			(select count(*) FROM REPORT  WHERE num_novel = #{num_novel}) reportCnt
+		from novel
+		where NUM_NOVEL=#{num_novel}
+	</select>
+		
+  
+	<!-- 에피소드 리스트 보여주기 -->
+	<!-- kr.co.noveljoa.user.episode.vo.EpListVO -->
+	<select id="selectEpList" parameterType="Integer" 
+		resultType="kr.co.noveljoa.user.episode.domain.EpListDomain">
+		select num_novel, num_episode, title, visit, make
+		from episode
+		where num_novel=#{num_novel} 
+		  and open=1
+		  order by num_episode DESC
+	</select>
+		
+	<!-- 에피소드 내용 보여주기 -->
+	<select id="selectEp" parameterType="kr.co.noveljoa.user.episode.vo.EpCheckVO" 
+		resultType="kr.co.noveljoa.user.episode.domain.EpLookDomain">
+		select e.num_member, e.num_novel, e.num_episode, n.title novelTitle, e.title epTitle, e.story epDetail, e.cmt cmt,
+			(select count(*) from BOOKMARK b 
+			 where num_member=#{num_member} and num_episode=#{num_episode}) bookmark 
+		from episode e, novel n
+		where n.num_novel=e.num_novel 
+		  and e.num_novel=#{num_novel} 
+		  and e.num_episode=#{num_episode}
+		  and e.open=1		  
+	</select>
+	
+	
+    <!-- 첫화 보여주기 -->
+    <select id="selectEpFirst" parameterType="Integer" resultType="Integer">
+    	select distinct first_value(num_episode) over(order by num_episode) first
+		from episode 
+		where num_novel=#{num_novel}
+    </select>
+
+
+	<!-- 이전화 보여주기 -->
+	<select id="selectEpPrev" parameterType="kr.co.noveljoa.user.episode.vo.EpCheckVO" 
+		resultType="Integer">
+	  	select prev
+		from 
+			(select lag(num_episode, 1, 0) over(order by num_episode) prev, num_episode 
+			from episode 
+			where num_novel=#{num_novel} 
+			  and open=1)
+		where num_episode=#{num_episode}
+	</select>
+
+ 
+	<!-- 다음화 보여주기 -->
+	<select id="selectEpNext" parameterType="kr.co.noveljoa.user.episode.vo.EpCheckVO" 
+		resultType="Integer">
+		select next
+		from 
+			(select lead(num_episode, 1, 0) over(order by num_episode) next, num_episode
+			from episode 
+			where num_novel=#{num_novel} and open=1) 
+		where num_episode=#{num_episode}
+	</select>
+	
+	
+	<!-- 에피소드 조회수 증가 -->
+	<update id="updateViews" parameterType="Integer">
+		update episode 
+		set visit =(visit+1) 
+		where num_episode=#{num_episode}
+	</update>
+	
+	
+	<!-- 좋아요 추가 -->
+	<insert id="insertLike" parameterType="kr.co.noveljoa.user.episode.vo.NovelCheckVO" >
+		insert into liken(num_like, num_novel, num_member) 
+			select num_like.nextval, #{num_novel}, #{num_member} 
+		from dual	
+		where not exists (select 0 from liken where num_member=#{num_member} and num_novel=#{num_novel})
+	</insert>
+	
+	
+	<!-- 좋아요 삭제 -->
+	<delete id="deleteLike" parameterType="kr.co.noveljoa.user.episode.vo.NovelCheckVO">
+		delete 
+		from liken 
+		where num_member=#{num_member} 
+		  and num_novel=#{num_novel}
+	</delete>
+	
+	<select id="selectLikeCnt" parameterType="Integer" 
+		resultType="Integer">
+		 select count(*) 
+		 from liken 
+		 where num_novel=#{num_novel}
+	</select>
+	
+	
+	<!-- 좋아요되어 있으면 화면에 표시 -->
+	<select id="selectLike" parameterType="kr.co.noveljoa.user.episode.vo.NovelCheckVO" 
+		resultType="Integer">
+		 select count(*) 
+		 from liken 
+		 where num_member=#{num_member} 
+		   and num_novel=#{num_novel}
+	</select>
+	
+	<!-- 신고되어 있으면 화면에 표시 -->
+	<select id="selectReport" parameterType="kr.co.noveljoa.user.episode.vo.ReportVO" 
+		resultType="Integer">
+		
+		 select count(*)
+		 from report r, member m 
+		 where r.id=m.id
+		   and m.id=#{id} 
+		   and r.num_novel=#{num_novel}
+		   
+	</select>
+	
+	<!-- 신고추가 -->
+	<insert id="insertReport" parameterType="kr.co.noveljoa.user.episode.vo.NovelReportVO">
+		
+		insert into report (num_report, num_novel, id, reason_code, report_date )
+			select num_report.nextval, #{num_novel}, #{id} , #{reason_code}, sysdate
+		from dual	
+		where not exists (select 0 from report where id=#{id} and num_novel=#{num_novel})   
+
+	</insert>
+	
+ 	
+ 	<!-- 북마크 추가 -->
+ 	<insert id="insertBookmark" parameterType="kr.co.noveljoa.user.episode.vo.EpBmVO">
+ 		
+ 		insert into bookmark(bookmark_num, num_member, num_episode)
+			select bookmark_num.nextval, #{num_member}, #{num_episode}
+		FROM DUAL 
+		WHERE NOT EXISTS (SELECT 0 FROM bookmark where num_member=#{num_member} and num_episode=#{num_episode})
+		
+ 	</insert>
+	
+ 	
+ 	<!-- 북마크 삭제 -->
+	<delete id="deleteBookmark" parameterType="kr.co.noveljoa.user.episode.vo.EpBmVO">
+ 		delete 
+ 		from bookmark
+ 		where num_member=#{num_member} 
+		  and num_episode=#{num_episode}
+ 	</delete>
+	
+  
+  
+</mapper>

@@ -1,0 +1,259 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.noveljoa.admin.Mapper">
+  <select id="selectLogin" parameterType="kr.co.noveljoa.admin.vo.MLoginVO" resultType="kr.co.noveljoa.admin.domain.MLoginDomain">
+    select id, create_date from manager where id = #{ id } and password = #{ password }
+  </select>
+  
+<insert id="insertManager" parameterType="kr.co.noveljoa.admin.vo.InsertMVO">
+insert into manager(id, password, create_date) values(#{ id }, #{ password }, sysdate)
+</insert>
+
+<select id="selectDash" resultType="kr.co.noveljoa.admin.domain.DashBoardDomain">
+    SELECT
+  (SELECT COUNT(*) FROM member) AS memberCnt,
+  (SELECT COUNT(*) FROM NOVEL) AS novelCnt,
+  (SELECT COUNT(*) FROM ( SELECT * FROM (SELECT to_char(JOIN,'yyyy-MM-DD') JOIN FROM MEMBER) )
+	WHERE JOIN = TRUNC(SYSDATE)) AS todaySignUpCnt,
+  (SELECT COUNT(*) FROM ( SELECT * FROM (SELECT to_char(visit,'yyyy-MM-DD') visit FROM history) )
+	 WHERE visit = TRUNC(SYSDATE) ) AS todayVisitCnt,
+	(SELECT COUNT(*) FROM ( SELECT * FROM (SELECT to_char(make,'yyyy-MM-DD') make FROM novel) )
+	WHERE make = TRUNC(SYSDATE)) AS todayCreateNovelCnt,
+	(SELECT COUNT(*) FROM ( SELECT * FROM (SELECT to_char(make,'yyyy-MM-DD') make FROM episode) )
+	WHERE make = TRUNC(SYSDATE)) AS todayCreateEpCnt
+FROM dual
+</select>
+
+
+<select id="selectAllMember" resultType="kr.co.noveljoa.admin.domain.MemberManageDomain">
+SELECT m.id as id, m.num_member as num_member,
+  (SELECT COUNT(*) FROM novel where num_member=m.num_member) AS novelcnt,
+  NVL((SELECT MAX(h.visit) FROM history h WHERE m.num_member = h.num_member),m.join) AS visitDate,
+  m.join as joinDate, m.stop AS susPeriod FROM member m CROSS JOIN dual
+  order by m.num_member
+</select>
+
+<select id="selectOneMember" resultType="kr.co.noveljoa.admin.domain.MemberManageDomain" parameterType="String">
+ SELECT m.id as id, m.num_member as num_member,
+  (SELECT COUNT(*) FROM novel where num_member=m.num_member) AS novelcnt,
+  NVL((SELECT MAX(h.visit) FROM history h WHERE m.num_member = h.num_member),m.join) AS visitDate,
+  m.join as joinDate, m.stop AS susPeriod FROM member m CROSS JOIN dual where id = #{ id }
+</select>
+
+
+
+
+<select id="selectMemInfo" resultType="kr.co.noveljoa.admin.domain.MemberManageInfoDomain" parameterType="String">
+    SELECT num_member, id, name, birth as birthDate, phone, email,
+    NVL(m.photo,'profile_home.png') as thumbnail, join as joinDate , stop as susPeriod,
+    NVL((SELECT COUNT(*) FROM comments WHERE num_member=m.num_member), 0) AS commentCnt,
+    NVL((SELECT COUNT(*) FROM novel WHERE num_member=m.num_member), 0) AS novelCnt,
+    NVL((SELECT MAX(h.visit) FROM history h WHERE m.num_member = h.num_member), m.join) AS visitDate
+		FROM member m
+		INNER JOIN dual ON id = #{ id }
+</select>
+
+<select id="selectAllMemCnt" resultType="kr.co.noveljoa.admin.domain.AllMDomain">
+select
+(SELECT COUNT(*) FROM member <![CDATA[ where join<(sysdate-6)]]> ) as allMCnt6,
+(SELECT COUNT(*) FROM member <![CDATA[ where join<(sysdate-5)]]> ) as allMCnt5,
+(SELECT COUNT(*) FROM member <![CDATA[ where join<(sysdate-4)]]> ) as allMCnt4,
+(SELECT COUNT(*) FROM member <![CDATA[ where join<(sysdate-3)]]> ) as allMCnt3,
+(SELECT COUNT(*) FROM member <![CDATA[ where join<(sysdate-2)]]> ) as allMCnt2,
+(SELECT COUNT(*) FROM member <![CDATA[ where join<(sysdate-1)]]> ) as allMCnt1,
+(SELECT COUNT(*) FROM member <![CDATA[ where join<(sysdate)]]> ) as allMCnt0
+from dual
+</select>
+
+<select id="selectAllNovCnt" resultType="kr.co.noveljoa.admin.domain.AllNDomain">
+ select
+ (SELECT COUNT(*) FROM novel <![CDATA[ where make<(sysdate-6)]]> ) as allNCnt6,
+ (SELECT COUNT(*) FROM novel <![CDATA[ where make<(sysdate-5)]]> ) as allNCnt5,
+ (SELECT COUNT(*) FROM novel <![CDATA[ where make<(sysdate-4)]]> ) as allNCnt4,
+ (SELECT COUNT(*) FROM novel <![CDATA[ where make<(sysdate-3)]]> ) as allNCnt3,
+ (SELECT COUNT(*) FROM novel <![CDATA[ where make<(sysdate-2)]]> ) as allNCnt2,
+ (SELECT COUNT(*) FROM novel <![CDATA[ where make<(sysdate-1)]]> ) as allNCnt1,
+ (SELECT COUNT(*) FROM novel <![CDATA[ where make<(sysdate)]]> ) as allNCnt0
+from dual
+</select>
+
+<select id="selectTodayJoinCnt" resultType="kr.co.noveljoa.admin.domain.TodayJoinDomain">
+select
+(SELECT COUNT(*) FROM ( SELECT * FROM (SELECT to_char(JOIN,'yyyy-MM-DD') JOIN FROM MEMBER)) WHERE JOIN = TRUNC(SYSDATE-6)) AS jCnt6,
+(SELECT COUNT(*) FROM ( SELECT * FROM (SELECT to_char(JOIN,'yyyy-MM-DD') JOIN FROM MEMBER)) WHERE JOIN = TRUNC(SYSDATE-5)) AS jCnt5,
+(SELECT COUNT(*) FROM ( SELECT * FROM (SELECT to_char(JOIN,'yyyy-MM-DD') JOIN FROM MEMBER)) WHERE JOIN = TRUNC(SYSDATE-4)) AS jCnt4,
+(SELECT COUNT(*) FROM ( SELECT * FROM (SELECT to_char(JOIN,'yyyy-MM-DD') JOIN FROM MEMBER)) WHERE JOIN = TRUNC(SYSDATE-3)) AS jCnt3,
+(SELECT COUNT(*) FROM ( SELECT * FROM (SELECT to_char(JOIN,'yyyy-MM-DD') JOIN FROM MEMBER)) WHERE JOIN = TRUNC(SYSDATE-2)) AS jCnt2,
+(SELECT COUNT(*) FROM ( SELECT * FROM (SELECT to_char(JOIN,'yyyy-MM-DD') JOIN FROM MEMBER)) WHERE JOIN = TRUNC(SYSDATE-1)) AS jCnt1,
+(SELECT COUNT(*) FROM ( SELECT * FROM (SELECT to_char(JOIN,'yyyy-MM-DD') JOIN FROM MEMBER)) WHERE JOIN = TRUNC(SYSDATE)) AS jCnt0
+from dual
+</select>
+
+<select id="selectTodayVisitCnt" resultType="kr.co.noveljoa.admin.domain.TodayVisitDomain">
+select
+(SELECT COUNT(*) FROM ( SELECT * FROM (SELECT to_char(visit,'yyyy-MM-DD') visit FROM history)) WHERE visit = TRUNC(SYSDATE-6)) AS vCnt6,
+(SELECT COUNT(*) FROM ( SELECT * FROM (SELECT to_char(visit,'yyyy-MM-DD') visit FROM history)) WHERE visit = TRUNC(SYSDATE-5)) AS vCnt5,
+(SELECT COUNT(*) FROM ( SELECT * FROM (SELECT to_char(visit,'yyyy-MM-DD') visit FROM history)) WHERE visit = TRUNC(SYSDATE-4)) AS vCnt4,
+(SELECT COUNT(*) FROM ( SELECT * FROM (SELECT to_char(visit,'yyyy-MM-DD') visit FROM history)) WHERE visit = TRUNC(SYSDATE-3)) AS vCnt3,
+(SELECT COUNT(*) FROM ( SELECT * FROM (SELECT to_char(visit,'yyyy-MM-DD') visit FROM history)) WHERE visit = TRUNC(SYSDATE-2)) AS vCnt2,
+(SELECT COUNT(*) FROM ( SELECT * FROM (SELECT to_char(visit,'yyyy-MM-DD') visit FROM history)) WHERE visit = TRUNC(SYSDATE-1)) AS vCnt1,
+(SELECT COUNT(*) FROM ( SELECT * FROM (SELECT to_char(visit,'yyyy-MM-DD') visit FROM history)) WHERE visit = TRUNC(SYSDATE)) AS vCnt0
+from dual
+</select>
+
+<update id="updateStop" parameterType="String">
+update member set stop
+			=sysdate+60
+			where id = #{ id }
+</update>
+
+<update id="updateUnStop" parameterType="String">
+update member set stop
+			= null
+			where id = #{ id }
+</update>
+
+<update id="updateMemInfo" parameterType="kr.co.noveljoa.admin.vo.UpdateMemVO">
+update member set id=#{ id }, name=#{ name }, phone=#{ phone }, email=#{ email }
+		 where num_member= #{ num_member }
+</update>
+
+<select id="selectMComment" resultType="kr.co.noveljoa.admin.domain.CommentDomain" parameterType="String">
+select comment_num, id, title, detail, c.make as make
+		 from member m
+		 inner join comments c on m.num_member = c.num_member
+		 inner join episode e on c.num_episode = e.num_episode
+ <where>
+ <if test="id != null and id!= ''" >
+ id=#{ id }
+ </if>
+ </where>
+ order by comment_num
+</select>
+
+<delete id="deleteComment" parameterType="integer">
+delete from comments where comment_num=#{ comment_num }
+</delete>
+
+
+
+
+
+<!-- ///////////////////////////////////////manager novel, report/////////////////////////////////////// -->
+<select id="selectAllNovel" resultType="kr.co.noveljoa.admin.domain.MNovelDomain">
+SELECT DISTINCT n.num_novel AS novelNum, n.title AS novelTitle,
+    (SELECT COUNT(*) FROM liken WHERE num_novel = n.num_novel) AS likeCnt, n.make AS createDate, m.id AS id,
+    (SELECT COUNT(*) FROM report WHERE num_novel = n.num_novel) AS reportCnt
+FROM novel n
+LEFT JOIN member m ON n.num_member = m.num_member
+ORDER BY novelNum DESC
+</select>
+
+<select id="searchNovel" resultType="kr.co.noveljoa.admin.domain.MNovelDomain" parameterType="String">
+SELECT DISTINCT n.num_novel AS novelNum, n.title AS novelTitle,
+    (SELECT COUNT(*) FROM liken WHERE num_novel = n.num_novel) AS likeCnt, n.make AS createDate, m.id AS id,
+    (SELECT COUNT(*) FROM report WHERE num_novel = n.num_novel) AS reportCnt
+FROM novel n
+LEFT JOIN member m ON n.num_member = m.num_member
+<if test="id != null">
+WHERE M.ID = #{id, jdbcType=VARCHAR}
+</if>
+ORDER BY novelNum DESC
+</select>
+
+<select id="selectReport" resultType="kr.co.noveljoa.admin.domain.MNovelLookDomain" parameterType="Integer"> 
+select n.title as novelTitle, n.photo as thumbnail, n.story as intro, n.age as ageAble, m.id as id,
+	(select reason_code from report where num_novel = n.num_novel group by reason_code
+	order by count(*) desc fetch first 1 row only) as reportReason,
+	(select count(*) from report where num_novel = n.num_novel) as reportCnt, n.num_novel as novelNum
+from novel n join member m on n.num_member = m.num_member left join report r on n.num_novel = r.num_novel
+where n.num_novel = #{num_novel} group by n.title, n.photo, n.story, n.age, m.id, n.num_novel
+</select>
+
+<delete id="deleteNovel" parameterType="Integer">
+delete from novel where num_novel = #{novelNum}
+</delete>
+
+<update id="updatePublic" parameterType="Integer">
+UPDATE novel
+SET open = 1
+WHERE num_novel = #{novelNum}
+</update>
+
+<update id="updatePrivate" parameterType="Integer">
+UPDATE novel
+SET open = 0
+WHERE num_novel = #{novelNum}
+</update>
+
+<!-- ///////////////////////////////////////board/////////////////////////////////////// -->
+<select id="selectAllBoard" resultType="kr.co.noveljoa.admin.domain.MBoardDomain"> 
+SELECT B.BOARD_NUM AS boardNum,
+       M.ID AS id,
+       B.TITLE AS boardTitle,
+       B.MAKE AS createDate,
+       B.VIEWS AS views,
+       (SELECT COUNT(*) FROM BOARD_CMT BC WHERE BC.BOARD_NUM = B.BOARD_NUM AND BC.MANAGER_CMT IS NOT NULL) AS reply
+FROM BOARD B
+JOIN MEMBER M ON B.NUM_MEMBER = M.NUM_MEMBER
+ORDER BY B.BOARD_NUM DESC
+</select>
+
+<select id="searchBoard" resultType="kr.co.noveljoa.admin.domain.MBoardDomain" parameterType="String">
+SELECT B.BOARD_NUM AS boardNum,
+       M.ID AS id,
+       B.TITLE AS boardTitle,
+       B.DETAIL AS boardDetail,
+       B.MAKE AS createDate,
+       B.VIEWS AS views,
+       (SELECT COUNT(*) FROM BOARD_CMT BC WHERE BC.BOARD_NUM = B.BOARD_NUM AND BC.MANAGER_CMT IS NOT NULL) AS reply
+FROM BOARD B
+JOIN MEMBER M ON B.NUM_MEMBER = M.NUM_MEMBER
+<if test="id != null">
+    WHERE M.ID = #{id, jdbcType=VARCHAR}
+</if>
+ORDER BY B.BOARD_NUM DESC
+</select>
+
+<select id="selectQNA" resultType="kr.co.noveljoa.admin.domain.MBoardDetailDomain" parameterType="Integer"> 
+SELECT B.BOARD_NUM AS boardNum,
+       M.ID AS id,
+       B.TITLE AS boardTitle,
+       B.DETAIL AS boardDetail,
+       B.MAKE AS createDate,
+       B.VIEWS AS views
+FROM BOARD B
+JOIN MEMBER M ON B.NUM_MEMBER = M.NUM_MEMBER
+where board_num = #{boardNum}
+</select>
+
+<delete id="deleteBoard" parameterType="Integer">
+delete from board where board_num = #{boardNum}
+</delete>
+
+<select id="selectCmt" resultType="kr.co.noveljoa.admin.domain.MCommentDomain" parameterType="Integer"> 
+SELECT BC.BOARD_CMT_NUM AS cmtNum, M.ID AS id, BC.DETAIL AS cmtDetail, BC.MAKE AS createDate, BC.MANAGER_CMT AS managerCmt
+FROM BOARD_CMT BC
+LEFT JOIN MEMBER M ON BC.NUM_MEMBER = M.NUM_MEMBER
+WHERE BOARD_NUM = #{boardNum}
+ORDER BY BC.MAKE DESC
+</select>
+ 
+<insert id="insertCmt" parameterType="kr.co.noveljoa.admin.vo.MBoardCmtVO">
+INSERT INTO board_cmt (board_cmt_num, board_num, make, manager_cmt)
+VALUES (board_cmt_seq.nextval, #{boardNum}, sysdate, #{managerCmt, jdbcType=VARCHAR})
+</insert>
+
+<update id="modifyCmt" parameterType="kr.co.noveljoa.admin.vo.MBoardCmtVO">
+update BOARD_CMT
+set MANAGER_CMT = #{managerCmt, jdbcType=VARCHAR}
+where BOARD_CMT_NUM = #{cmtNum}
+</update>
+
+<delete id="deleteCmt" parameterType="kr.co.noveljoa.admin.vo.MBoardCmtVO">
+DELETE FROM BOARD_CMT WHERE BOARD_CMT_NUM = #{cmtNum}
+</delete>  
+
+</mapper>

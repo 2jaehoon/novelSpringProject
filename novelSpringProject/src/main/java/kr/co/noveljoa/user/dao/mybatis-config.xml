@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE configuration
+  PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-config.dtd">
+<configuration>
+	<properties resource="properties/database.properties"/>
+  <environments default="development">
+    <environment id="development">
+      <transactionManager type="JDBC"/>
+      <dataSource type="POOLED">
+        <property name="driver" value="${driver}"/>
+        <property name="url" value="${url}"/>
+        <property name="username" value="${username}"/>
+        <property name="password" value="${password}"/>
+      </dataSource>
+    </environment>
+  </environments>
+  
+  <mappers>
+    <mapper resource="kr/co/noveljoa/user/main/main_mapper.xml"/>
+    <mapper resource="kr/co/noveljoa/user/ranking/ranking_mapper.xml"/>
+    <mapper resource="kr/co/noveljoa/user/search/search_mapper.xml"/>
+    <mapper resource="kr/co/noveljoa/user/mynovel/mynovel_mapper.xml"/>
+    <mapper resource="kr/co/noveljoa/user/mylike/mylike_mapper.xml"/>
+    <mapper resource="kr/co/noveljoa/user/mybookmark/mybookmark_mapper.xml"/>
+    <mapper resource="kr/co/noveljoa/user/newnovel/newnovel_mapper.xml"/>
+    <mapper resource="kr/co/noveljoa/user/writernovel/writernovel_mapper.xml"/>
+    <mapper resource="kr/co/noveljoa/user/noveledit/editnovel_mapper.xml"/>
+    <mapper resource="kr/co/noveljoa/user/episode/domain/episode_mapper.xml"/>
+    <mapper resource="kr/co/noveljoa/user/episode/domain/episodeMy_mapper.xml"/>
+    <mapper resource="kr/co/noveljoa/user/episode/domain/comment_mapper.xml"/>
+  </mappers>
+  
+</configuration>
